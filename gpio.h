@@ -40,11 +40,3 @@ void setHigh(GPIO_TypeDef GPIOX, uint8_t pins);
 void setLow(GPIO_TypeDef GPIOX, uint8_t pins);
 uint8_t read(GPIO_TypeDef GPIOX, uint8_t pin)
 uint16_t readADC(GPIO_TypeDef GPIOX, uint8_t pin);
-
-
-
-
-
-
-
-
