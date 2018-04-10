@@ -15,15 +15,15 @@ GPIO functionality for ATmega 1248p
 #define PORTC 	0x28
 #define PORTD 	0x2B
 
-#define PINA 	  0x20
-#define PINB 	  0x23
-#define PINC	  0x26
-#define PIND	  0x29
+#define PINA 	0x20
+#define PINB 	0x23
+#define PINC	0x26
+#define PIND	0x29
 
-#define DDRA	  0x21
-#define DDRB	  0x24
-#define DDRC	  0x27
-#define DDRD	  0x28
+#define DDRA	0x21
+#define DDRB	0x24
+#define DDRC	0x27
+#define DDRD	0x28
 
 #define PIN0    0x01
 #define PIN1    0x02
@@ -34,6 +34,13 @@ GPIO functionality for ATmega 1248p
 #define PIN6    0x40
 #define PIN7    0x80
 
+
+
+void pinMode(uint8_t num, uint8_t mode){
+  
+}
+void digitalWrite(uint8_t num, uint8_t value);
+void digitalRead(uint8_t num);
 
 
 
