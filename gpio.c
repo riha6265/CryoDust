@@ -35,6 +35,13 @@ GPIO functionality for ATmega 1248p
 #define PIN7    0x80
 
 
+void setOutput(uint8_t DDRX, uint8_t pins)
+{ 
+	// DDRX must be the name of the GPIO port that you want to use (i.e. GPIOX as defined in the header file)
+	// pins is a byte containing a '1' in the position of any pins that you want to set as outputs. Any bits with a zero will have no effect on the direction of those pins
+}
+
+
 
 void pinMode(uint8_t num, uint8_t mode){
   
