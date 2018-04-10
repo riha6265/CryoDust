@@ -7,6 +7,8 @@ April 2018
 GPIO functionality for ATmega 1248p
 */
 
+#include "gpio.h"
+
 // Register definitions
 #define MCUCR 0x55
 
@@ -77,5 +79,4 @@ uint8_t readADC(GPIO_TypeDef GPIOX, uint8_t pin)
 {
 
 }
-
 
