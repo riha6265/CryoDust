@@ -16,7 +16,19 @@ Just a simple GPIO library for the ATmega1248p, for use in the CryoDust project
 #define HIGH    1
 #define LOW     0
 
-void setOutput(uint8_t DDRX, uint8_t pins);
+typedef enum{
+	GPIOA = 0,
+	GPIOB,
+	GPIOC,
+	GPIOD
+}GPIO_TypeDef;
+
+
+
+#define GPIOA	0
+#define GPIOB	
+
+void setOutput(GPIO_TypeDef GPIOX, uint8_t pins);
 
 
 // void pinMode(uint8_t num, uint8_t mode);
