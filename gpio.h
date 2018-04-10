@@ -23,19 +23,21 @@ typedef enum{
 	GPIOD
 }GPIO_TypeDef;
 
-
-
-#define GPIOA	0
-#define GPIOB	
+#define PIN0    0x01
+#define PIN1    0x02
+#define PIN2    0x04
+#define PIN3    0x08
+#define PIN4    0x10
+#define PIN5    0x20
+#define PIN6    0x40
+#define PIN7    0x80
 
 void setOutput(GPIO_TypeDef GPIOX, uint8_t pins);
-
-
-// void pinMode(uint8_t num, uint8_t mode);
-// void digitalWrite(uint8_t num, uint8_t value);
-// void digitalRead(uint8_t num);
-
-
+void setInput(GPIO_TypeDef GPIOX, uint8_t pins);
+void setAnalog(GPIO_TypeDef GPIOX, uint8_t pins);
+void toggle(GPIO_TypeDef GPIOX, uint8_t pins);
+void setHigh(GPIO_TypeDef GPIOX, uint8_t pins);
+void setLow(GPIO_TypeDef GPIOX, uint8_t pins);
 
 
 
