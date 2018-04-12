@@ -7,9 +7,41 @@ April 2018
 Just a simple GPIO library for the ATmega1248p, for use in the CryoDust project
 */
 
+#ifndef GPIO_H_
+#define GPIO_H_
 
+#define OUTPUT  1
+#define INPUT   0
 
+#define HIGH    1
+#define LOW     0
 
+typedef enum{
+	GPIOA = 0,
+	GPIOB,
+	GPIOC,
+	GPIOD
+}GPIO_TypeDef;
+
+#define PIN0    0x01
+#define PIN1    0x02
+#define PIN2    0x04
+#define PIN3    0x08
+#define PIN4    0x10
+#define PIN5    0x20
+#define PIN6    0x40
+#define PIN7    0x80
+
+void GPIO_setOutput(GPIO_TypeDef GPIOX, uint8_t pins);
+void GPIO_setInput(GPIO_TypeDef GPIOX, uint8_t pins);
+void GPIO_setAnalog(GPIO_TypeDef GPIOX, uint8_t pins);
+void GPIO_toggle(GPIO_TypeDef GPIOX, uint8_t pins);
+void GPIO_setHigh(GPIO_TypeDef GPIOX, uint8_t pins);
+void GPIO_setLow(GPIO_TypeDef GPIOX, uint8_t pins);
+uint8_t GPIO_read(GPIO_TypeDef GPIOX, uint8_t pin);
+uint16_t GPIO_readADC(GPIO_TypeDef GPIOX, uint8_t pin);
+
+#endif /* GPIO_H_ */
 
 
 
