@@ -1,9 +1,9 @@
 #include "spi.h"
 
 void initSpi(void){
-	PRR0 = (1<<PRSPI);
+	//PRR0 = (1<<PRSPI);
 	 //Set MOSI and SCK output, all others input 
-	DDRB = (1<<DDB5)|(1<<DDB7);
+	DDRB = (1<<DDB5)|(1<<DDB7)|(1<<DDB4);
 	//Enable SPI, Master, set clock rate fck/16 
 	SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR0);
 }
