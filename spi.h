@@ -13,7 +13,7 @@
 void initSpi(void);
 //Initializes the SPI interface
 
-void transmit(uint8_t * sentence, uint8_t size);
+uint8_t * transmit(uint8_t * sentence, uint8_t size);
 //Transmits an array of chars of size
 
 char receive(void);
