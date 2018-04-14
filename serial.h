@@ -6,7 +6,6 @@
  */ 
 
 #include <avr/io.h>
-#include "SNOWCATHWR1.h"
 
 #ifndef SERIAL_H_
 #define SERIAL_H_
@@ -15,10 +14,16 @@
 
 #define SERIAL_buff_length 64
 uint8_t SERIAL_buff[SERIAL_buff_length];
+uint8_t SERIAL_read_ind;
+uint8_t SERIAL_write_ind;
+uint8_t SERIAL_write_ok;
 
 void SERIAL_init(void);
 void SERIAL_transmit( uint8_t data );
-uint8_t SERIAL_receive( void );
+//uint8_t SERIAL_receive( void );
+void SERIAL_print(uint8_t * pdata, uint8_t num_bytes);
+uint8_t SERIAL_available( void );
+uint8_t SERIAL_read_buff( void );
 
 
 
