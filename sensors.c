@@ -25,7 +25,10 @@ ToDo:
 // ---------
 void LIS3MDL_init(LIS3MDL_HandleTypeDef *hLIS3MDL)
 {
-	// SET SPI BUS SETTINGS!!!!!!!
+	GPIO_setOutput(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
+	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
+	
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
 
 	// CTRLx Registers
 	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG1, 	&(hLIS3MDL->Init.CTRL_REG1_VAL), 	1); 				// Set CTRL1 from user values
@@ -40,9 +43,11 @@ void LIS3MDL_read(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *dat
 {
 	GPIO_setLow(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
 	// SPI transfer initial byte ((reg_add & 0x3F) | 0xC0);																			// Set the CS line low to begin transmission
+	SPI_transmitByte((reg_add & 0x3F) | 0xC0);
 	for(uint8_t indi = 0; indi < num_reads; indi++)
 	{
 		// SPI transfer stuff (write)
+		*(data_out_ptr + indi) = SPI_transmitByte(0x00);
 	}
 	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);																			// Set the CS line high to end transmission
 }
@@ -52,9 +57,11 @@ void LIS3MDL_write(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *da
 	// This function uses blocking SPI because the transmissions will be relatively short, and it simplifies interrupt handling
 	GPIO_setLow(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin); 																			// Set the CS line low to begin transmission
 	// SPI transfer initial byte (address and write code) setup byte = ((reg_add & 0x3F) | 0x40);
+	SPI_transmitByte((reg_add & 0x3F) | 0x40);
 	for(uint8_t indi = 0; indi < num_writes; indi++)
 	{
 		// SPI transfer stuff (write)
+		SPI_transmitByte(*(data_in_ptr + indi));
 	}
 	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin); 																		// Set the CS line high to end transmission
 }
@@ -65,7 +72,7 @@ void	LIS3MDL_update_vals(LIS3MDL_HandleTypeDef *hLIS3MDL)
 	const uint8_t num_reads = 9;
 	uint8_t vals[num_reads];
 
-	// SET SPI BUS SETTINGS!!!!!!!
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
 
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_STATUS_REG, &vals[0], num_reads);
 
@@ -83,7 +90,7 @@ void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
 	uint8_t CR2 = LIS3MDL_CTRL_REG2_DEFAULT;
 	uint8_t CR4 = LIS3MDL_CTRL_REG4_DEFAULT;
 
-	// SET SPI BUS SETTINGS!!!!!!!
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
 
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG2, &CR2, 1);
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG4, &CR4, 1);
@@ -120,16 +127,24 @@ void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
 //////////////////////////////////////////////////////
 void ADT7320_init(ADT7320_HandleTypeDef *hADT7320)
 {
+	GPIO_setOutput(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
+	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	
+	SPI_init(ADT7320_CPOL, ADT7320_CPHA); // Assert SPI bus
+
+	// CTRLx Registers
+	LIS3MDL_write(hADT7320, ADT7320_REG_CONFIG, 	&(hADT7320->Init.ADT7320_CONFIG_VAL), 	1); 				// Set CTRL1 from user values
 }
 
 void ADT7320_read(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads)
 {
 	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x80)
+	SPI_transmitByte((reg_add & 0x3F) | 0x40);
 	for(uint8_t indi = 0; indi < num_reads; indi++)
 	{
 		// SPI transfer data, put the result in the buffer
+		*(data_out_ptr + indi) = SPI_transmitByte(0x00);
 	}
 	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 }
@@ -138,9 +153,11 @@ void ATD7320_write(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *da
 {
 	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x00)
+	SPI_transmitByte((reg_add & 0x3F) | 0x00);
 	for(uint8_t indi = 0; indi < num_writes; indi++)
 	{
 		// SPI transfer data, send data from the buffer
+		SPI_transmitByte(*(data_in_ptr + indi));
 	}
 	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 }
@@ -183,13 +200,19 @@ void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double * pdata)
 //////////////////////////////////////////////////////
 //				HSCDRRN010MDSA3 Pressure Sensor		//
 //////////////////////////////////////////////////////
+void HSC_init(HSC_HandleTypeDef *hHSC)
+{
+	GPIO_setOutput(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
+	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);	
+}
+
 
 void HSC_read(HSC_HandleTypeDef *hHSC)
 {
 	uint8_t buff[2];
 	GPIO_setLow(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	// SPI transfer first byte and place contents in buffer	
-	// SPI transfer second byte and place contents in buffer	
+	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer	
+	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer	
 	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
 	hHSC->P = (((buff[0] << 8) | buff[1]) & 0x3FFF);
 }
@@ -208,14 +231,19 @@ void HSC_get_pa(HSC_HandleTypeDef *hHSC, double *pdata)
 
 //////////////////////////////////////////////////////
 //				HIH7131-000-001 Humidity Sensor		//
-//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+void HIH_init(HIH_HandleTypeDef *hHIH)
+{
+	GPIO_setOutput(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
+	GPIO_setHigh(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
+}
 
 void HIH_read(HIH_HandleTypeDef *hHIH)
 {	
 	uint8_t buff[2];
 	GPIO_setLow(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
-	// SPI transfer first byte and place contents in buffer
-	// SPI transfer second byte and place contents in buffer
+	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer
+	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer
 	GPIO_setHigh(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
 	hHIH->RH = (((buff[0] << 8) | buff[1]) & 0x3FFF);
 }
@@ -225,7 +253,6 @@ void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata)
 	HSC_read(hHIH);
 	*(pdata) = (double) (hHIH->RH *100)/(16382) ; //
 }
-
 
 
 
