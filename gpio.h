@@ -1,12 +1,11 @@
 /*
- * IncFile1.h
- *
- * Created: 4/12/2018 9:10:17 AM
- *  Author: Owen Lyke
- */ 
+gpio.h
 
+Owen Lyke
+April 2018
 
-
+Just a simple GPIO library for the ATmega1248p, for use in the CryoDust project
+*/
 #ifndef GPIO_H_
 #define GPIO_H_
 
