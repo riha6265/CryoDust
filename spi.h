@@ -10,13 +10,13 @@
 
 #include <avr/io.h>
 
-void initSpi(void);
+void SPI_init(uint8_t polarity, uint8_t phase);
 //Initializes the SPI interface
 
-uint8_t * transmit(uint8_t * sentence, uint8_t size);
+uint8_t * SPI_transmit(uint8_t * sentence, uint8_t size);
 //Transmits an array of chars of size
 
-char receive(void);
+uint8_t SPI_receive(void);
 //Return the SPI data buffer
 
 #endif
