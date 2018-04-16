@@ -1,120 +1,166 @@
 /*
-LIS3MDL.c
+FXAS21002C.h
 
-Header: LIS3MDL.h
-
-Written by Owen Lyke, April 2018
+Written by Owen Lyke April 2018
 Updated April 2018
-
-ToDo:
-
 */
 
 
-#include <avr/io.h>
-#include "gpio.h"
-//#include "spi.h"
-#include "sensors.h"
+#ifndef SENSORS_H
+#define SENSORS_H
+
+// Includes
 
 
-//////////////////////////////////////////////////////
-//				LIS3MDL Magnetometer				//
-//////////////////////////////////////////////////////
+// ==================================================
+//                   LIS3MDL Defines
+// ==================================================
 
-// Functions
+// SPI parameters of LIS3DH device
+// -------------------------------
+#define LIS3MDL_CPOL 1		// Idle high
+#define LIS3MDL_CPHA 1		// Data valid on second edge (aka rising edge for idle-high)
+#define LIS3MDL_MAX_SPI_FREQ 10000000 		// Hz
+#define LIS3MDL_SPI_DEFAULT_TIMEOUT 100U 	// Same value as in the HAL library. The units are SysTics, but I'm not 100% sure how that translates to seconds. I think 1 systick is how long the ARM systick counter takes to overflow
+
+// CTRL_REG1
 // ---------
-void LIS3MDL_init(LIS3MDL_HandleTypeDef *hLIS3MDL)
-{
-	GPIO_setOutput(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
-	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
-	
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
+#define LIS3MDL_CTRL_REG1_DEFAULT 	0x10	// Power up default value
+#define LIS3MDL_TEMPen				0x80 	// Enable temperature sensor
+#define LIS3MDL_OMXY_LPM			0x00 	// Low power mode for X and Y axes
+#define LIS3MDL_OMXY_MPM			0x20	// Medium-performance mode for X and Y axes
+#define LIS3MDL_OMXY_HPM			0x40 	// High-perforance mode for X and Y axes
+#define LIS3MDL_OMXY_UHPM			0x60	// Ultrahigh-performance mode for X and Y axes
+#define LIS3MDL_ODR_0p625			0x00	// 0.625	Hz output data rate
+#define LIS3MDL_ODR_1p25			0x04	// 1.25  	Hz output data rate
+#define LIS3MDL_ODR_2p5 			0x08 	// 2.5  	Hz output data rate
+#define LIS3MDL_ODR_5 				0x0C 	// 5  		Hz output data rate
+#define LIS3MDL_ODR_10 				0x10	// 10 		Hz output data rate
+#define LIS3MDL_ODR_20 				0x14 	// 20 		Hz output data rate
+#define LIS3MDL_ODR_40 				0x18 	// 40 		Hz output data rate
+#define LIS3MDL_ODR_80 				0x1C 	// 80 		Hz output data rate
+#define LIS3MDL_FAST_ODRen			0x02 	// Enable fast output data rate, used in conjunction with operating mode setting to determine ODR, up to 1kHz
+#define LIS3MDL_STen 				0x01 	// Enable self-test mode
 
-	// CTRLx Registers
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG1, 	&(hLIS3MDL->Init.CTRL_REG1_VAL), 	1); 				// Set CTRL1 from user values
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG2, 	&(hLIS3MDL->Init.CTRL_REG2_VAL), 	1); 				// Set CTRL2 from user values
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG3, 	&(hLIS3MDL->Init.CTRL_REG3_VAL), 	1); 				// Set CTRL3 from user values
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG4, 	&(hLIS3MDL->Init.CTRL_REG4_VAL), 	1); 				// Set CTRL4 from user values
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG5, 	&(hLIS3MDL->Init.CTRL_REG5_VAL), 	1); 				// Set CTRL5 from user values
-	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_INT_CFG, 	&(hLIS3MDL->Init.INT_CFG_VAL), 		1); 				// Set INT_CFG from user values
-}
+// CTRL_REG2
+// ---------
+#define LIS3MDL_CTRL_REG2_DEFAULT 	0x00	// Power up default value
+#define LIS3MDL_FS_4				0x00	// +/- 4 gauss full-scale range
+#define LIS3MDL_FS_8				0x20	// +/- 8 gauss full-scale range
+#define LIS3MDL_FS_12				0x40	// +/- 12 gauss full-scale range
+#define LIS3MDL_FS_16				0x60	// +/- 16 gauss full-scale range
+#define LIS3MDL_REBOOT				0x08 	// Reboot memory content
+#define LIS3MDL_SOFT_RST			0x04 	// Configuration registers and user register reset function
 
-void LIS3MDL_read(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads)
-{
-	GPIO_setLow(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
-	// SPI transfer initial byte ((reg_add & 0x3F) | 0xC0);																			// Set the CS line low to begin transmission
-	SPI_transmitByte((reg_add & 0x3F) | 0xC0);
-	for(uint8_t indi = 0; indi < num_reads; indi++)
-	{
-		// SPI transfer stuff (write)
-		*(data_out_ptr + indi) = SPI_transmitByte(0x00);
-	}
-	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);																			// Set the CS line high to end transmission
-}
+// CTRL_REG3
+// ---------
+#define LIS3MDL_CTRL_REG3_DEFAULT 	0x03	// Power up default value
+#define LIS3MDL_LPen				0x20 	// Enable low-power mode. ODR is set to 0.625 Hz
+#define LIS3MDL_SIM_3				0x04 	// Enable 3-wire SPI mode
+#define LIS3MDL_OM_CONT 			0x00 	// Continuous-conversion mode
+#define LIS3MDL_OM_SINGLE 			0x01 	// Single-conversion mode. Single-conversion mode has to be used with sampling frequency from 0.625 Hz to 80Hz.
+#define LIS3MDL_OM_PWRDWN 			0x02 	// Power-down mode
 
-void LIS3MDL_write(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_in_ptr, uint8_t num_writes)
-{
-	// This function uses blocking SPI because the transmissions will be relatively short, and it simplifies interrupt handling
-	GPIO_setLow(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin); 																			// Set the CS line low to begin transmission
-	// SPI transfer initial byte (address and write code) setup byte = ((reg_add & 0x3F) | 0x40);
-	SPI_transmitByte((reg_add & 0x3F) | 0x40);
-	for(uint8_t indi = 0; indi < num_writes; indi++)
-	{
-		// SPI transfer stuff (write)
-		SPI_transmitByte(*(data_in_ptr + indi));
-	}
-	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin); 																		// Set the CS line high to end transmission
-}
+// CTRL_REG4
+// ---------
+#define LIS3MDL_CTRL_REG4_DEFAULT 	0x00	// Power up default value
+#define LIS3MDL_OMZ_LPM				0x00 	// Low-power mode for Z axis
+#define LIS3MDL_OMZ_MPM				0x04 	// Medium-performance mode for Z axis
+#define LIS3MDL_OMZ_HPM				0x08 	// High-perforance mode for Z axis
+#define LIS3MDL_OMZ_UHPM			0x0C	// Ultrahigh-performance mode for Z axis
+#define LIS3MDL_BLE_1 				0x02 	// Select data MSB at lower address
+
+// CTRL_REG5
+// ---------
+#define LIS3MDL_CTRL_REG5_DEFAULT 	0x00	// Power up default value
+#define LIS3MDL_FAST_READen 		0x80 	// Allow reading of only high part of DATA OUT to increase reading efficiency
+#define LIS3MDL_BDUen				0x40 	// Enable output registers not updated until MSb and LSb have been read
+
+// INT_CFG
+// -------
+#define LIS3MDL_INT_CFG_DEFAULT 	0xE8	// Power up default value
+#define LIS3MDL_XIen 				0x80 	// Enable interrupt on X axis
+#define LIS3MDL_YIen 				0x80 	// Enable interrupt on Y axis
+#define LIS3MDL_ZIen 				0x80 	// Enable interrupt on Z axis
+#define LIS3MDL_IEA_1 				0x80 	// Interrupt active high
+#define LIS3MDL_LIR_1 				0x80 	// Interrupt request not latched
+#define LIS3MDL_Ien 				0x80 	// Interrupt enabled on INT pin
+
+// ==================================================
+//                    LIS3MDL Typdefs
+// ==================================================
+// Register Address Enum
+// ---------------------
+typedef enum {
+	// reserved 0x00 - 0x0E
+	LIS3MDL_REG_WHO_AM_I = 0x0F,
+	// reserved 0x10 - 0x1F
+	LIS3MDL_REG_CTRL_REG1 = 0x20,
+	LIS3MDL_REG_CTRL_REG2,
+	LIS3MDL_REG_CTRL_REG3,
+	LIS3MDL_REG_CTRL_REG4,
+	LIS3MDL_REG_CTRL_REG5,
+	// reserved 0x25 - 0x26
+	LIS3MDL_REG_STATUS_REG = 0x27,
+	LIS3MDL_REG_OUT_X_L,
+	LIS3MDL_REG_OUT_X_H,
+	LIS3MDL_REG_OUT_Y_L,
+	LIS3MDL_REG_OUT_Y_H,
+	LIS3MDL_REG_OUT_Z_L,
+	LIS3MDL_REG_OUT_Z_H,
+	LIS3MDL_REG_TEMP_OUT_L,
+	LIS3MDL_REG_TEMP_OUT_H,
+	LIS3MDL_REG_INT_CFG,
+	LIS3MDL_REG_INT_SRC,
+	LIS3MDL_REG_INT_THS_L,
+	LIS3MDL_REG_INT_THS_H
+}LIS3MDL_RegisterTypeDef;
 
 
-void	LIS3MDL_update_vals(LIS3MDL_HandleTypeDef *hLIS3MDL)
-{
-	const uint8_t num_reads = 9;
-	uint8_t vals[num_reads];
+// Initialization Data
+// -------------------
+typedef struct{
+	uint8_t 	CTRL_REG1_VAL;		// Value for F_SETUP, constructed by ORing appropriate defined values
+	uint8_t 	CTRL_REG2_VAL;		// Value for RT_CFG, constructed by ORing appropriate defined values
+	uint8_t 	CTRL_REG3_VAL;		// Value for RT_THS, constructed by ORing appropriate defined values
+	uint8_t 	CTRL_REG4_VAL;		// Value for CTRL0_REG, constructed by ORing appropriate defined values
+	uint8_t 	CTRL_REG5_VAL;		// Value for CTRL1_REG, constructed by ORing appropriate defined values
+	uint8_t 	INT_CFG_VAL;		// Value for CTRL2_REG, constructed by ORing appropriate defined values
+}LIS3MDL_InitTypeDef;
 
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
+// Handle
+// ------------------
+typedef struct{
+	LIS3MDL_InitTypeDef  	Init;			// Initialization parameters for the sensor
 
-	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_STATUS_REG, &vals[0], num_reads);
+	GPIO_TypeDef			CS_GPIO;		// On which GPIO port is the CS line?
+	uint8_t 				CS_GPIO_Pin;	// Which pin of that port is the CS line?
 
-	hLIS3MDL->STATUS = vals[0];
-	hLIS3MDL->X = ((vals[2] << 8) | vals[1]);
-	hLIS3MDL->Y = ((vals[4] << 8) | vals[3]);
-	hLIS3MDL->Z = ((vals[6] << 8) | vals[5]);
-	hLIS3MDL->T = ((vals[8] << 8) | vals[7]);
-}
+	uint8_t 				STATUS;			// Latest status from the STATUS register
+	uint16_t				X;				// Latest X-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+	uint16_t				Y;				// Latest Y-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+	uint16_t				Z;				// Latest Z-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+	uint16_t				T;				// Latest temperature data represented as concatenation of MSB and LSB registers with MSB first
 
-void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
-{
-	// This function is intended to provide the acceleration value in Gs (1g = 9.81 m/s2)
-	// pdata should point to an array of three double types, used to represent {X,Y,Z} respectively
-	uint8_t CR2 = LIS3MDL_CTRL_REG2_DEFAULT;
-	uint8_t CR4 = LIS3MDL_CTRL_REG4_DEFAULT;
+}LIS3MDL_HandleTypeDef;
 
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
 
-	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG2, &CR2, 1);
-	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG4, &CR4, 1);
+// ==================================================
+//                     Functions
+// ==================================================
+void 	LIS3MDL_init(LIS3MDL_HandleTypeDef *hLIS3MDL);																						// Initialization, uses user-defined parameters. User must completely fill out the initialization structure before initializing
 
-	LIS3MDL_update_vals(hLIS3MDL);
+void	LIS3MDL_update_vals(LIS3MDL_HandleTypeDef *hLIS3MDL);																			// Most basic acceleration retrieval. Values in hLIS3DH->[X,Y,Z] look just like concatenation of the MSB and LSB registers for each axis respectively.
+void	LIS3MDL_get_mts(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata);																	// Get acceleration values in g's, filled into a double array of your choosing
 
-	double scale = 0.000122070312; // Scale for +/-4guass assuming full 16-bit
-	switch( (CR2 & 0x60) >> 5 ){
-		case 0x00 : scale *= 1; break;					// Unity scale for +/-4guass
-		case 0x01 : scale *= 2; break;					// Double scale for +/-8guass
-		case 0x02 : scale *= 3; break;					// Triple scale for +/-12guass
-		case 0x03 : scale *= 4; break;					// Quadruple scale for +/-16guass
-	}
-	if( CR4 & 0x02 )
-	{
-		hLIS3MDL->X = (((hLIS3MDL->X & 0x00FF) << 8) | ((hLIS3MDL->X & 0xFF00) >> 8) );			// Flip the endianness of the variables because of this bit being set
-		hLIS3MDL->Y = (((hLIS3MDL->Y & 0x00FF) << 8) | ((hLIS3MDL->Y & 0xFF00) >> 8) );			// Flip the endianness of the variables because of this bit being set
-		hLIS3MDL->Z = (((hLIS3MDL->Z & 0x00FF) << 8) | ((hLIS3MDL->Z & 0xFF00) >> 8) );			// Flip the endianness of the variables because of this bit being set
-	}
+void 	LIS3MDL_read(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads);		//
+void 	LIS3MDL_write(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_in_ptr, uint8_t num_writes);
 
-	*(pdata + 0) = (double)(hLIS3MDL->X * scale);												// Now actually scale the data
-	*(pdata + 1) = (double)(hLIS3MDL->Y * scale);
-	*(pdata + 2) = (double)(hLIS3MDL->Z * scale);
-}
+#endif /* SENSORS_H */
+
+
+
+
 
 
 
@@ -123,73 +169,71 @@ void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
 
 
 //////////////////////////////////////////////////////
-//				ADT7320 Temperature Sensor			//
+//			  ADT7320 Temperature Sensor			//
 //////////////////////////////////////////////////////
-void ADT7320_init(ADT7320_HandleTypeDef *hADT7320)
-{
-	GPIO_setOutput(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
+#define ADT7320_CPOL 1
+#define ADT7320_CPHA 1
+
+// STATUS
+// ------
+#define ADT7320_STATUS_TLOW				0x10
+#define ADT7320_STATUS_THIGH			0x20
+#define ADT7320_STATUS_TCRIT			0x40
+#define ADT7320_STATUS_RDYL				0x80
+
+// CONFIG
+// ------
+#define ADT7320_CONFIG_DEFAULT			0x00
+#define ADT7320_CONFIG_FQ_1				0x00
+#define ADT7320_CONFIG_FQ_2				0x01
+#define ADT7320_CONFIG_FQ_3				0x02
+#define ADT7320_CONFIG_FQ_4				0x03
+#define ADT7320_CONFIG_CTPOL_L			0x00
+#define ADT7320_CONFIG_CTPOL_H			0x04
+#define ADT7320_CONFIG_INTPOL_L			0x00
+#define ADT7320_CONFIG_INTPOL_H			0x08
+#define ADT7320_CONFIG_CTMODE			0x10
+#define ADT7320_CONFIG_MODE_CONT		0x00
+#define ADT7320_CONFIG_MODE_SINGLE		0x20
+#define ADT7320_CONFIG_MODE_1SPS		0x40
+#define ADT7320_CONFIG_MODE_SHTDN		0x60
+#define ADT7320_CONFIG_RES_13			0x00
+#define ADT7320_CONFIG_RES_16			0x80
+
+
+typedef enum{
+	ADT7320_REG_STATUS = 0x00,
+	ADT7320_REG_CONFIG,
+	ADT7320_REG_TEMP_VAL,
+	ADT7320_REG_ID,
+	ADT7320_REG_TCRIT_SET,
+	ADT7320_REG_THYST_SET,
+	ADT7320_REG_THIGH_SET,
+	ADT7320_REG_TLOW_SET
+}ADT7320_RegisterTypeDef;
+
+typedef struct{
+	uint8_t		ADT7320_CONFIG_VAL;
+}ADT7320_InitTypeDef;
+
+typedef struct{
+	ADT7320_InitTypeDef			Init;
 	
-	SPI_init(ADT7320_CPOL, ADT7320_CPHA); // Assert SPI bus
+	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+	
+	uint16_t					T;				// The temperature value from the sensor, stored in left-justified twos complement (if the resolution is set to 13 then the lower three bits are used for a different purpose, but we won't use it that way)
+	
+}ADT7320_HandleTypeDef;
 
-	// CTRLx Registers
-	LIS3MDL_write(hADT7320, ADT7320_REG_CONFIG, 	&(hADT7320->Init.ADT7320_CONFIG_VAL), 	1); 				// Set CTRL1 from user values
-}
+void ADT7320_init(ADT7320_HandleTypeDef *hADT7320);
+void ADT7320_read(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads);
+void ATD7320_write(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_writes);
+void ADT7320_update_temp(ADT7320_HandleTypeDef *hADT7320);
+void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double *pdata);
 
-void ADT7320_read(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads)
-{
-	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x80)
-	SPI_transmitByte((reg_add & 0x3F) | 0x40);
-	for(uint8_t indi = 0; indi < num_reads; indi++)
-	{
-		// SPI transfer data, put the result in the buffer
-		*(data_out_ptr + indi) = SPI_transmitByte(0x00);
-	}
-	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-}
 
-void ATD7320_write(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_in_ptr, uint8_t num_writes)
-{
-	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x00)
-	SPI_transmitByte((reg_add & 0x3F) | 0x00);
-	for(uint8_t indi = 0; indi < num_writes; indi++)
-	{
-		// SPI transfer data, send data from the buffer
-		SPI_transmitByte(*(data_in_ptr + indi));
-	}
-	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-}
 
-void ADT7320_update_temp(ADT7320_HandleTypeDef *hADT7320)
-{
-	uint8_t buff[2];
-	ADT7320_read(hADT7320, ADT7320_REG_TEMP_VAL, &buff[0], 2);
-	hADT7320->T = ((buff[0] << 8) | buff[1]);
-}
-
-void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double * pdata)
-{
-	uint8_t CFG;
-	ADT7320_read(hADT7320, ADT7320_REG_CONFIG, &CFG, 1);
-	ADT7320_update_temp(hADT7320);
-	if( !(CFG & 0x80) )
-	{
-		if((hADT7320->T) & 0x8000)
-		{
-			*(pdata) = (double) 0.0625*(((hADT7320->T) >> 3) | (0xFFFF << (13))); // 13 bit mode, negative value
-		}
-		else
-		{
-			*(pdata) = (double) 0.0625*((hADT7320->T) >> 3); // 13 bit mode, positive value
-		}	
-	}
-	else
-	{
-		*(pdata) = (double) 0.0078125 * (hADT7320->T);
-	}
-}
 
 
 
@@ -200,61 +244,31 @@ void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double * pdata)
 //////////////////////////////////////////////////////
 //				HSCDRRN010MDSA3 Pressure Sensor		//
 //////////////////////////////////////////////////////
-void HSC_init(HSC_HandleTypeDef *hHSC)
-{
-	GPIO_setOutput(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);	
-}
+typedef struct{
+	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+	
+	uint16_t					P; 
+}HSC_HandleTypeDef;
 
+void HSC_read(HSC_HandleTypeDef *hHSC);
+void HSC_get_pa(HSC_HandleTypeDef *hHSC, double *pdata);
 
-void HSC_read(HSC_HandleTypeDef *hHSC)
-{
-	uint8_t buff[2];
-	GPIO_setLow(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer	
-	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer	
-	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	hHSC->P = (((buff[0] << 8) | buff[1]) & 0x3FFF);
-}
-
-void HSC_get_pa(HSC_HandleTypeDef *hHSC, double *pdata)
-{
-	HSC_read(hHSC);
-	*(pdata) = (double) (hHSC->P - 1638.4) * (2000 / 13107.2) - 1000; // Using the range of our sensor from -1000 pA to 1000 pA
-}
-
-
-
-
-
-
-
+	
+	
 //////////////////////////////////////////////////////
-//				HIH7131-000-001 Humidity Sensor		//
-/////////////////////////////////////////////////////
-void HIH_init(HIH_HandleTypeDef *hHIH)
-{
-	GPIO_setOutput(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
-	GPIO_setHigh(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
-}
+//				HIH7131-000-001 Pressure Sensor		//
+//////////////////////////////////////////////////////
+typedef struct{
+	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+	
+	uint16_t					RH;
+}HIH_HandleTypeDef;
 
-void HIH_read(HIH_HandleTypeDef *hHIH)
-{	
-	uint8_t buff[2];
-	GPIO_setLow(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
-	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer
-	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer
-	GPIO_setHigh(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
-	hHIH->RH = (((buff[0] << 8) | buff[1]) & 0x3FFF);
-}
-
-void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata)
-{
-	HSC_read(hHIH);
-	*(pdata) = (double) (hHIH->RH *100)/(16382) ; //
-}
-
-
-
-
-
+void HIH_read(HIH_HandleTypeDef *hHIH);
+void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata);
+	
+	
+	
+	
