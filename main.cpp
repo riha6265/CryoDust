@@ -5,8 +5,8 @@
 #include <util/delay.h>
 #include <string.h>
 #include <stdlib.h>
-#include "sdcard/ff.h"
-#include "sdcard/integer.h"
+#include "sd/ff.h"
+#include "sd/integer.h"
 
 FATFS FatFs;	// FatFs work area 
 FIL *fp;		// fpe object 
