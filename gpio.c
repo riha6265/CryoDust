@@ -1,11 +1,11 @@
 /*
 gpio.c
-
 Owen Lyke
 April 2018
-
 GPIO functionality for ATmega 1248p
 */
+#ifndef GPIO_H
+#define GPIO_H
 
 #include <avr/io.h>
 #include "gpio.h"
@@ -106,3 +106,4 @@ uint16_t GPIO_readADC(GPIO_TypeDef GPIOX, uint8_t pin)
 	uint8_t low = ADCL;
 	return ((ADCH << 8) | low);
 }
+#endif // GPIO_H

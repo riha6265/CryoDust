@@ -1,13 +1,13 @@
 /*
 gpio.h
-
 Owen Lyke
 April 2018
-
 Just a simple GPIO library for the ATmega1248p, for use in the CryoDust project
 */
 #ifndef GPIO_H_
 #define GPIO_H_
+
+#include <avr/io.h>
 
 #define OUTPUT  1
 #define INPUT   0

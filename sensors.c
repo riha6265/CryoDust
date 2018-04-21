@@ -1,20 +1,17 @@
 /*
 LIS3MDL.c
-
 Header: LIS3MDL.h
-
 Written by Owen Lyke, April 2018
 Updated April 2018
-
 ToDo:
-
 */
 
+#include "sensors.h"
 
 #include <avr/io.h>
 #include "gpio.h"
-//#include "spi.h"
-#include "sensors.h"
+#include "spi.h"
+
 
 
 //////////////////////////////////////////////////////
@@ -28,7 +25,7 @@ void LIS3MDL_init(LIS3MDL_HandleTypeDef *hLIS3MDL)
 	GPIO_setOutput(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
 	GPIO_setHigh(hLIS3MDL->CS_GPIO, hLIS3MDL->CS_GPIO_Pin);
 	
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA,1); // Assert SPI bus
 
 	// CTRLx Registers
 	LIS3MDL_write(hLIS3MDL, LIS3MDL_REG_CTRL_REG1, 	&(hLIS3MDL->Init.CTRL_REG1_VAL), 	1); 				// Set CTRL1 from user values
@@ -72,7 +69,7 @@ void	LIS3MDL_update_vals(LIS3MDL_HandleTypeDef *hLIS3MDL)
 	const uint8_t num_reads = 9;
 	uint8_t vals[num_reads];
 
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA,1); // Assert SPI bus
 
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_STATUS_REG, &vals[0], num_reads);
 
@@ -90,7 +87,7 @@ void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
 	uint8_t CR2 = LIS3MDL_CTRL_REG2_DEFAULT;
 	uint8_t CR4 = LIS3MDL_CTRL_REG4_DEFAULT;
 
-	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA); // Assert SPI bus
+	SPI_init(LIS3MDL_CPOL, LIS3MDL_CPHA,1); // Assert SPI bus
 
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG2, &CR2, 1);
 	LIS3MDL_read(hLIS3MDL, LIS3MDL_REG_CTRL_REG4, &CR4, 1);
@@ -130,10 +127,10 @@ void ADT7320_init(ADT7320_HandleTypeDef *hADT7320)
 	GPIO_setOutput(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	
-	SPI_init(ADT7320_CPOL, ADT7320_CPHA); // Assert SPI bus
+	SPI_init(ADT7320_CPOL, ADT7320_CPHA,1); // Assert SPI bus
 
 	// CTRLx Registers
-	LIS3MDL_write(hADT7320, ADT7320_REG_CONFIG, 	&(hADT7320->Init.ADT7320_CONFIG_VAL), 	1); 				// Set CTRL1 from user values
+	ATD7320_write(hADT7320, ADT7320_REG_CONFIG, 	&(hADT7320->Init.ADT7320_CONFIG_VAL), 	1); 				// Set CTRL1 from user values
 }
 
 void ADT7320_read(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads)
@@ -183,7 +180,7 @@ void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double * pdata)
 		else
 		{
 			*(pdata) = (double) 0.0625*((hADT7320->T) >> 3); // 13 bit mode, positive value
-		}	
+		}
 	}
 	else
 	{
@@ -203,7 +200,7 @@ void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double * pdata)
 void HSC_init(HSC_HandleTypeDef *hHSC)
 {
 	GPIO_setOutput(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);	
+	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
 }
 
 
@@ -211,8 +208,8 @@ void HSC_read(HSC_HandleTypeDef *hHSC)
 {
 	uint8_t buff[2];
 	GPIO_setLow(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
-	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer	
-	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer	
+	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer
+	buff[1] = SPI_transmitByte(0x00);			// SPI transfer second byte and place contents in buffer
 	GPIO_setHigh(hHSC->CS_GPIO, hHSC->CS_GPIO_Pin);
 	hHSC->P = (((buff[0] << 8) | buff[1]) & 0x3FFF);
 }
@@ -239,7 +236,7 @@ void HIH_init(HIH_HandleTypeDef *hHIH)
 }
 
 void HIH_read(HIH_HandleTypeDef *hHIH)
-{	
+{
 	uint8_t buff[2];
 	GPIO_setLow(hHIH->CS_GPIO, hHIH->CS_GPIO_Pin);
 	buff[0] = SPI_transmitByte(0x00);			// SPI transfer first byte and place contents in buffer
@@ -250,11 +247,6 @@ void HIH_read(HIH_HandleTypeDef *hHIH)
 
 void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata)
 {
-	HSC_read(hHIH);
+	HIH_read(hHIH);
 	*(pdata) = (double) (hHIH->RH *100)/(16382) ; //
 }
-
-
-
-
-

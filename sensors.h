@@ -1,6 +1,5 @@
 /*
 FXAS21002C.h
-
 Written by Owen Lyke April 2018
 Updated April 2018
 */
@@ -8,9 +7,14 @@ Updated April 2018
 
 #ifndef SENSORS_H
 #define SENSORS_H
+#ifdef __cplusplus
+extern "C" {
+	#endif
+
+	// all of your legacy C code here
 
 // Includes
-
+#include "gpio.h"
 
 // ==================================================
 //                   LIS3MDL Defines
@@ -92,55 +96,55 @@ Updated April 2018
 // Register Address Enum
 // ---------------------
 typedef enum {
-	// reserved 0x00 - 0x0E
-	LIS3MDL_REG_WHO_AM_I = 0x0F,
-	// reserved 0x10 - 0x1F
-	LIS3MDL_REG_CTRL_REG1 = 0x20,
-	LIS3MDL_REG_CTRL_REG2,
-	LIS3MDL_REG_CTRL_REG3,
-	LIS3MDL_REG_CTRL_REG4,
-	LIS3MDL_REG_CTRL_REG5,
-	// reserved 0x25 - 0x26
-	LIS3MDL_REG_STATUS_REG = 0x27,
-	LIS3MDL_REG_OUT_X_L,
-	LIS3MDL_REG_OUT_X_H,
-	LIS3MDL_REG_OUT_Y_L,
-	LIS3MDL_REG_OUT_Y_H,
-	LIS3MDL_REG_OUT_Z_L,
-	LIS3MDL_REG_OUT_Z_H,
-	LIS3MDL_REG_TEMP_OUT_L,
-	LIS3MDL_REG_TEMP_OUT_H,
-	LIS3MDL_REG_INT_CFG,
-	LIS3MDL_REG_INT_SRC,
-	LIS3MDL_REG_INT_THS_L,
-	LIS3MDL_REG_INT_THS_H
+// reserved 0x00 - 0x0E
+LIS3MDL_REG_WHO_AM_I = 0x0F,
+// reserved 0x10 - 0x1F
+LIS3MDL_REG_CTRL_REG1 = 0x20,
+LIS3MDL_REG_CTRL_REG2,
+LIS3MDL_REG_CTRL_REG3,
+LIS3MDL_REG_CTRL_REG4,
+LIS3MDL_REG_CTRL_REG5,
+// reserved 0x25 - 0x26
+LIS3MDL_REG_STATUS_REG = 0x27,
+LIS3MDL_REG_OUT_X_L,
+LIS3MDL_REG_OUT_X_H,
+LIS3MDL_REG_OUT_Y_L,
+LIS3MDL_REG_OUT_Y_H,
+LIS3MDL_REG_OUT_Z_L,
+LIS3MDL_REG_OUT_Z_H,
+LIS3MDL_REG_TEMP_OUT_L,
+LIS3MDL_REG_TEMP_OUT_H,
+LIS3MDL_REG_INT_CFG,
+LIS3MDL_REG_INT_SRC,
+LIS3MDL_REG_INT_THS_L,
+LIS3MDL_REG_INT_THS_H
 }LIS3MDL_RegisterTypeDef;
 
 
 // Initialization Data
 // -------------------
 typedef struct{
-	uint8_t 	CTRL_REG1_VAL;		// Value for F_SETUP, constructed by ORing appropriate defined values
-	uint8_t 	CTRL_REG2_VAL;		// Value for RT_CFG, constructed by ORing appropriate defined values
-	uint8_t 	CTRL_REG3_VAL;		// Value for RT_THS, constructed by ORing appropriate defined values
-	uint8_t 	CTRL_REG4_VAL;		// Value for CTRL0_REG, constructed by ORing appropriate defined values
-	uint8_t 	CTRL_REG5_VAL;		// Value for CTRL1_REG, constructed by ORing appropriate defined values
-	uint8_t 	INT_CFG_VAL;		// Value for CTRL2_REG, constructed by ORing appropriate defined values
+uint8_t 	CTRL_REG1_VAL;		// Value for F_SETUP, constructed by ORing appropriate defined values
+uint8_t 	CTRL_REG2_VAL;		// Value for RT_CFG, constructed by ORing appropriate defined values
+uint8_t 	CTRL_REG3_VAL;		// Value for RT_THS, constructed by ORing appropriate defined values
+uint8_t 	CTRL_REG4_VAL;		// Value for CTRL0_REG, constructed by ORing appropriate defined values
+uint8_t 	CTRL_REG5_VAL;		// Value for CTRL1_REG, constructed by ORing appropriate defined values
+uint8_t 	INT_CFG_VAL;		// Value for CTRL2_REG, constructed by ORing appropriate defined values
 }LIS3MDL_InitTypeDef;
 
 // Handle
 // ------------------
 typedef struct{
-	LIS3MDL_InitTypeDef  	Init;			// Initialization parameters for the sensor
+LIS3MDL_InitTypeDef  	Init;			// Initialization parameters for the sensor
 
-	GPIO_TypeDef			CS_GPIO;		// On which GPIO port is the CS line?
-	uint8_t 				CS_GPIO_Pin;	// Which pin of that port is the CS line?
+GPIO_TypeDef			CS_GPIO;		// On which GPIO port is the CS line?
+uint8_t 				CS_GPIO_Pin;	// Which pin of that port is the CS line?
 
-	uint8_t 				STATUS;			// Latest status from the STATUS register
-	uint16_t				X;				// Latest X-axis data represented as the concatentation of the MSB and LSB registers with MSB first
-	uint16_t				Y;				// Latest Y-axis data represented as the concatentation of the MSB and LSB registers with MSB first
-	uint16_t				Z;				// Latest Z-axis data represented as the concatentation of the MSB and LSB registers with MSB first
-	uint16_t				T;				// Latest temperature data represented as concatenation of MSB and LSB registers with MSB first
+uint8_t 				STATUS;			// Latest status from the STATUS register
+uint16_t				X;				// Latest X-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+uint16_t				Y;				// Latest Y-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+uint16_t				Z;				// Latest Z-axis data represented as the concatentation of the MSB and LSB registers with MSB first
+uint16_t				T;				// Latest temperature data represented as concatenation of MSB and LSB registers with MSB first
 
 }LIS3MDL_HandleTypeDef;
 
@@ -155,17 +159,6 @@ void	LIS3MDL_get_mts(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata);										
 
 void 	LIS3MDL_read(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads);		//
 void 	LIS3MDL_write(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *data_in_ptr, uint8_t num_writes);
-
-#endif /* SENSORS_H */
-
-
-
-
-
-
-
-
-
 
 
 //////////////////////////////////////////////////////
@@ -202,28 +195,28 @@ void 	LIS3MDL_write(LIS3MDL_HandleTypeDef *hLIS3MDL, uint8_t reg_add, uint8_t *d
 
 
 typedef enum{
-	ADT7320_REG_STATUS = 0x00,
-	ADT7320_REG_CONFIG,
-	ADT7320_REG_TEMP_VAL,
-	ADT7320_REG_ID,
-	ADT7320_REG_TCRIT_SET,
-	ADT7320_REG_THYST_SET,
-	ADT7320_REG_THIGH_SET,
-	ADT7320_REG_TLOW_SET
+ADT7320_REG_STATUS = 0x00,
+ADT7320_REG_CONFIG,
+ADT7320_REG_TEMP_VAL,
+ADT7320_REG_ID,
+ADT7320_REG_TCRIT_SET,
+ADT7320_REG_THYST_SET,
+ADT7320_REG_THIGH_SET,
+ADT7320_REG_TLOW_SET
 }ADT7320_RegisterTypeDef;
 
 typedef struct{
-	uint8_t		ADT7320_CONFIG_VAL;
+uint8_t		ADT7320_CONFIG_VAL;
 }ADT7320_InitTypeDef;
 
 typedef struct{
-	ADT7320_InitTypeDef			Init;
-	
-	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
-	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
-	
-	uint16_t					T;				// The temperature value from the sensor, stored in left-justified twos complement (if the resolution is set to 13 then the lower three bits are used for a different purpose, but we won't use it that way)
-	
+ADT7320_InitTypeDef			Init;
+
+GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+
+uint16_t					T;				// The temperature value from the sensor, stored in left-justified twos complement (if the resolution is set to 13 then the lower three bits are used for a different purpose, but we won't use it that way)
+
 }ADT7320_HandleTypeDef;
 
 void ADT7320_init(ADT7320_HandleTypeDef *hADT7320);
@@ -233,42 +226,38 @@ void ADT7320_update_temp(ADT7320_HandleTypeDef *hADT7320);
 void ADT7320_get_degc(ADT7320_HandleTypeDef *hADT7320, double *pdata);
 
 
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////
 //				HSCDRRN010MDSA3 Pressure Sensor		//
 //////////////////////////////////////////////////////
 typedef struct{
-	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
-	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
-	
-	uint16_t					P; 
+GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+
+uint16_t					P;
 }HSC_HandleTypeDef;
 
 void HSC_read(HSC_HandleTypeDef *hHSC);
 void HSC_get_pa(HSC_HandleTypeDef *hHSC, double *pdata);
 
-	
-	
+
+
 //////////////////////////////////////////////////////
 //				HIH7131-000-001 Pressure Sensor		//
 //////////////////////////////////////////////////////
 typedef struct{
-	GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
-	uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
-	
-	uint16_t					RH;
+GPIO_TypeDef				CS_GPIO;		// On which GPIO port is the CS line?
+uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
+
+uint16_t					RH;
 }HIH_HandleTypeDef;
 
 void HIH_read(HIH_HandleTypeDef *hHIH);
 void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata);
-	
-	
-	
-	
+
+
+
+	#ifdef __cplusplus
+}
+#endif
+
+#endif /* SENSORS_H */
