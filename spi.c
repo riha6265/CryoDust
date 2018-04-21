@@ -20,9 +20,8 @@ uint8_t SPI_transmitByte(char data){
 
 uint8_t * SPI_transmit(uint8_t * sentence, uint8_t size){
 	volatile int i = 0;
-	uint8_t read[size];
 	for(i; i < size; i++){
-		read[i] = SPI_transmitByte(sentence[i]);
+		sentence[i] = SPI_transmitByte(sentence[i]);
 	}
-	return read;
+	return sentence;
 }

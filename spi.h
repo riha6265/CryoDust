@@ -8,6 +8,10 @@
 #ifndef SPI_H
 #define SPI_H
 
+#ifdef __cplusplus
+extern "C" {
+	#endif
+
 #include <avr/io.h>
 
 void SPI_init(uint8_t polarity, uint8_t phase, uint8_t divider);
@@ -20,5 +24,11 @@ uint8_t * SPI_transmit(uint8_t * sentence, uint8_t size);
 //Transmits an array of chars of size
 //Full duplex transfer ie data received is returned
 //To send a byte set size to 1, to only receive let sentence be 0's 
+
+uint8_t SPI_transmitByte(char data);
+
+	#ifdef __cplusplus
+}
+#endif
 
 #endif

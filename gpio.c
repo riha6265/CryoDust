@@ -1,9 +1,7 @@
 /*
 gpio.c
-
 Owen Lyke
 April 2018
-
 GPIO functionality for ATmega 1248p
 */
 #ifndef GPIO_H
