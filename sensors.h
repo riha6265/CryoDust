@@ -236,6 +236,7 @@ uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
 uint16_t					P;
 }HSC_HandleTypeDef;
 
+void HSC_init(HSC_HandleTypeDef *hHSC);
 void HSC_read(HSC_HandleTypeDef *hHSC);
 void HSC_get_pa(HSC_HandleTypeDef *hHSC, double *pdata);
 
@@ -251,6 +252,7 @@ uint8_t 					CS_GPIO_Pin;	// Which pin of that port is the CS line?
 uint16_t					RH;
 }HIH_HandleTypeDef;
 
+void HIH_init(HIH_HandleTypeDef *hHIH);
 void HIH_read(HIH_HandleTypeDef *hHIH);
 void HIH_get_rh(HIH_HandleTypeDef *hHIH, double *pdata);
 
