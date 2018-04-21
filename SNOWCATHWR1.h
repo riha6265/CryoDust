@@ -9,6 +9,8 @@
 #ifndef SNOWCATHWR1_H_
 #define SNOWCATHWR1_H_
 
+#include "gpio.h"
+
 // Color named LED output
 #define RLED_GPIO GPIOD
 #define RLED_PIN PIN4
@@ -64,6 +66,12 @@
 #define CS_HUM_GPIO_PIN PIN2
 #define CS_TEMP_GPIO GPIOA
 #define CS_TEMP_GPIO_PIN PIN0
+
+// Servo 
+#define SERVO_PWM_GPIO GPIOC
+#define SERVO_PWM_GPIO_PIN PIN5
+#define SERVO_CENTER_VAL 4149			// Use this to define the "center" value of the servo... i.e. 
+#define SERVO_FRAME_LENGTH 82988		// Value should be FOSC/F_frames, and should be greater than the center value
 
 
 // Clock Info
