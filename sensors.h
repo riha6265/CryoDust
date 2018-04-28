@@ -15,6 +15,8 @@ extern "C" {
 
 // Includes
 #include "gpio.h"
+#include "timeout.h"
+#include <util/delay.h>
 
 // ==================================================
 //                   LIS3MDL Defines

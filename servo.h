@@ -15,6 +15,8 @@ extern "C" {
 
 #include <avr/io.h>
 
+volatile uint8_t fin;
+
 void servo_goto_chamber(uint8_t chamber);
 
 void servo_initialize();

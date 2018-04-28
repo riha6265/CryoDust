@@ -125,22 +125,25 @@ void	LIS3MDL_get_guass(LIS3MDL_HandleTypeDef *hLIS3MDL, double * pdata)
 void ADT7320_init(ADT7320_HandleTypeDef *hADT7320)
 {
 	GPIO_setOutput(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
+	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	
-	SPI_init(ADT7320_CPOL, ADT7320_CPHA,1); // Assert SPI bus
+	SPI_init(ADT7320_CPOL, ADT7320_CPHA,2); // Assert SPI bus
 
 	// CTRLx Registers
 	ATD7320_write(hADT7320, ADT7320_REG_CONFIG, 	&(hADT7320->Init.ADT7320_CONFIG_VAL), 	1); 				// Set CTRL1 from user values
+	GPIO_setHigh(hADT7320->CS_GPIO,hADT7320->CS_GPIO_Pin);
 }
 
 void ADT7320_read(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *data_out_ptr, uint8_t num_reads)
 {
 	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
-	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x80)
-	SPI_transmitByte((reg_add & 0x3F) | 0x40);
+	///SPI transfer setup byte ((reg_addr & 0x7F) | 0x80)
+	SPI_transmitByte(0x54); //FIXME
+	_delay_ms(240);
 	for(uint8_t indi = 0; indi < num_reads; indi++)
 	{
 		// SPI transfer data, put the result in the buffer
+		//SPI_transmitByte((reg_add & 0x7F));
 		*(data_out_ptr + indi) = SPI_transmitByte(0x00);
 	}
 	GPIO_setHigh(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
@@ -150,7 +153,8 @@ void ATD7320_write(ADT7320_HandleTypeDef *hADT7320, uint8_t reg_add, uint8_t *da
 {
 	GPIO_setLow(hADT7320->CS_GPIO, hADT7320->CS_GPIO_Pin);
 	// SPI transfer setup byte ((reg_addr & 0x7F) | 0x00)
-	SPI_transmitByte((reg_add & 0x3F) | 0x00);
+	//SPI_transmitByte(0xFF);
+	SPI_transmitByte((reg_add & 0x38)| 0x00);
 	for(uint8_t indi = 0; indi < num_writes; indi++)
 	{
 		// SPI transfer data, send data from the buffer
