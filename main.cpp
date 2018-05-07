@@ -13,12 +13,16 @@
 #include "spi.h"
 #include "SNWCTHWR1.h"
 #include "servo.h"
+#include "rtc.h"
 #include <avr/interrupt.h>
 
 ADT7320_HandleTypeDef hTEMP;
 LIS3MDL_HandleTypeDef hMAG;
 HSC_HandleTypeDef hPRESS;
 HIH_HandleTypeDef hHUM;
+timeStamp stamp;
+timeStamp stamp2;
+timeStamp stamp3;
 
 extern volatile uint8_t fin;
 
@@ -41,14 +45,70 @@ DWORD get_fattime (void)
 
 int main(void)
 {
-	servo_power_off();
-	GPIO_setOutput(RLED_GPIO,RLED_PIN);
-	GPIO_setLow(RLED_GPIO,RLED_PIN);
+
+	//RTC test Code
+	_delay_ms(200);
+	UINT bw;
+	f_mount(0, &FatFs);		// Give a work area to the FatFs module
+	// open file
+	fp = (FIL *)malloc(sizeof (FIL));
+	if (f_open(fp, "test.txt", FA_WRITE | FA_CREATE_ALWAYS) == FR_OK) {	// Create a file
+		char * text = "Writing date 4:20 4/20 2018 to SD card\r\n";
+		f_write(fp, text, strlen(text), &bw);	// Write data to the file
+		f_close(fp);// Close the file
+	}
 	
-	servo_goto_chamber(3);
-	while(!fin){}
-	//GPIO_setLow(RLED_GPIO,RLED_PIN);
+	stamp.min = 20;
+	stamp.hour = 4;
+	stamp.day = 20;
+	stamp.month = 4;
+	stamp.year = 2018;
+	rtc_init();
+	rtc_set_time((&stamp));
 	
+	char * rtcData = (char*)malloc(20 * sizeof(char));
+	
+	GPIO_setInput(GPIOD,GPIN2,PULLUP);
+	
+	while (1)
+	{	
+						
+			rtc_init();
+			rtc_update_time((&stamp2));
+			
+			SPI_init(0,0,0);
+			SPCR = 0; ///////////////////////// Must have after SPI sensor read
+			_delay_ms(200);
+			sprintf(rtcData, "T: %d:%d, %d/%d/%d\r\n", stamp2.hour, stamp2.min, stamp2.month, stamp2.day, stamp2.year);
+			// test append
+			f_mount(0, &FatFs);
+			if (f_open(fp, "test.txt", FA_WRITE | FA_OPEN_ALWAYS) == FR_OK) {	// Open existing or create new file
+				if (f_lseek(fp, f_size(fp)) == FR_OK)
+				{
+					f_write(fp,rtcData,strlen(rtcData),&bw);	// Write data to the file
+				}
+				f_close(fp);// Close the file
+				_delay_ms(200); //Always delay to allow SPI lines to settle.
+			}
+			
+			rtc_init();
+			rtc_timedWake(1);
+			powerdown();
+	}
+
+	//Servo Test Code
+	/*servo_power_off();
+	
+	while(1){
+		for(int i = 0; i<5; i++){
+			servo_goto_chamber(i);
+			while(!fin){}
+			_delay_ms(200);
+			fin = 0;
+		}
+	}*/
+	
+	//SD Test Code
 	/*// reboot delay
 	_delay_ms(200);
 	UINT bw;
@@ -99,7 +159,7 @@ int main(void)
 		
 		HIH_read(&hHUM);
 		
-		uint16_t temp[] = {hTEMP.T}; //FIXME
+		uint16_t temp[] = {hTEMP.T}; 
 		
 		uint16_t mag[] = {hMAG.X,hMAG.Y,hMAG.Z};
 			

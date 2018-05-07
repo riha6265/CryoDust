@@ -69,9 +69,15 @@ void servo_write( int16_t value )
 void servo_goto_chamber(uint8_t chamber)
 {
 	dest = chamber;
-	dir = -40;
+	//dir = -40;
 	fin = 0;
 	GPIO_setInput(GPIOC,(GPIN0|GPIN1|GPIN2|GPIN3|GPIN4|GPIN5),TRISTATE);
+	if(PINC&0x01){
+		dir = 40;
+	}else{
+		dir = -40;
+	}
+	
 	PORTC = 0;
 	//JTAGEN 
 	MCUCR |= (1<<PUD) |(1<<JTD);

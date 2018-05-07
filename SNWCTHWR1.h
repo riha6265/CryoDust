@@ -74,7 +74,9 @@
 #define SERVO_FRAME_LENGTH 1478		// Value should be FOSC/F_frames, and should be greater than the center value
 #define SERVO_TIMEOUT 200
 
-
+//RTC
+#define CS_RTC_GPIO GPIOA
+#define CS_RTC_GPIO_PIN GPIN4 
 
 // Clock Info
 #define FOSC	8000000
