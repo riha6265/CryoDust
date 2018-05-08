@@ -22,7 +22,7 @@ extern "C" {
 	void rtc_init();
 	void rtc_update_time(timeStamp *);
 	void rtc_set_time(timeStamp *);
-	void rtc_timedWake(uint8_t mins); //pass in minutes till wake 0-256
+	void rtc_timedWake(timeStamp *); //pass in minutes till wake 0-256
 	void powerdown(); 
 	#ifdef __cplusplus
 }

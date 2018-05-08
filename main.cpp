@@ -75,6 +75,7 @@ int main(void)
 						
 			rtc_init();
 			rtc_update_time((&stamp2));
+			stamp2.min += 1;
 			
 			SPI_init(0,0,0);
 			SPCR = 0; ///////////////////////// Must have after SPI sensor read
@@ -91,8 +92,9 @@ int main(void)
 				_delay_ms(200); //Always delay to allow SPI lines to settle.
 			}
 			
+
 			rtc_init();
-			rtc_timedWake(1);
+			rtc_timedWake((&stamp2));
 			powerdown();
 	}
 
